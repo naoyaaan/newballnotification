@@ -7,6 +7,7 @@ from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.select import By
 from fake_useragent import UserAgent
 from datetime import datetime,timedelta
+import requests
 
 def get_twitter_api(credentials):
     return twitter.Api(
@@ -47,24 +48,24 @@ def handler(data, context):
     if now.day < 10 : day = '0' + day
     today = month + '-' + day + '-' + str(now.year)
 
-    newballs = []
     if(today == update):
         months = ['January','February','March','April','March','June','July','August','September','October','November','December']
         update = months[now.month-1] + ' ' + str(now.day) + ', ' + str(now.year)
-        # update = 'June 1, 2021'
 
         select_element = driver.find_element(By.ID,'ddlApprovedBallList')
         select_object = Select(select_element)
 
         search_brands = ['Storm','Roto Grip','Sunbridge Co., Ltd.','Brunswick','Ebonite','Hammer','Legend Star','Motiv']
-        # search_brands = ['Storm']
         for i in range(len(search_brands)):
+            ballnames,imgs = [],[]
             select_object.select_by_value(search_brands[i])
             time.sleep(4)
             print(search_brands[i])
 
             approvedlist = driver.find_element_by_id('approvedlist')
             trs = approvedlist.find_elements(By.TAG_NAME,"tr")
+
+            message = str(now.year) + '-' + str(now.month) + '-' + str(now.day)+ '\n' + search_brands[i] + ':\n' 
 
             for j in range(len(trs)):
                 tds = trs[j].find_elements(By.TAG_NAME,"td")
@@ -73,11 +74,23 @@ def handler(data, context):
                 if(date == update):
                     image = tds[0].find_element(By.TAG_NAME,'a')
                     img_link = image.get_attribute('data-original-title').split('\'')[1]
-                    newballs.append([search_brands[i],name,img_link])
-        for i in range(len(newballs)):
-            message = str(now.year) + '-' + str(now.month) + '-' + str(now.day)+ '\n' + newballs[i][1]
-            api.PostUpdate(message,media=newballs[i][2])
+                    message += '\n' +  name
+                    ballnames.append(name)
+                    imgs.append(img_link)
+            api.PostUpdate(message,media=imgs)
+            send_line_notify(ballnames,imgs)
 
-    print(newballs)
     driver.quit()
     return "ok"
+
+def send_line_notify(ballnames,imgs):
+
+    for i in range(len(ballnames)):
+        line_notify_token = 'b945paFlh4wfkbnx4MQafiuHAAlcfKiYVpZlxisbArw'
+        line_notify_api = 'https://notify-api.line.me/api/notify'
+        headers = {'Authorization': 'Bearer ' + line_notify_token}
+        payload = { 'imageFullsize': imgs[i],
+                'imageThumbnail': imgs[i],
+                'message': ballnames[i]
+            }
+        requests.post(line_notify_api, headers = headers, data = payload)

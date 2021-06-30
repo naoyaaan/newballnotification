@@ -31,3 +31,7 @@ This is a program called **New Ball Notification**(NBN).
 * [python-twitter](https://python-twitter.readthedocs.io/en/latest/)
 
 * [Line notify document](https://notify-bot.line.me/doc/ja/)
+
+* [Line api document](https://developers.line.biz/ja/reference/messaging-api/#get-narrowcast-progress-status)
+
+* [line-bot-sdk python](https://github.com/line/line-bot-sdk-python)

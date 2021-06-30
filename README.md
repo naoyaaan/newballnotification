@@ -4,7 +4,7 @@ This is a program called **New Ball Notification**(NBN).
 
 ## Aim of NBN
 
-* I programmed NBN to deliver the newest bowling ball information to everyone who love bowling via twitter and Line.
+* I programmed NBN to deliver the newest bowling ball information to everyone who love bowling via twitter and Line(for my own account).
 
 * New balls must be registered to USBC and they are uploaded before the formal announcement of release by maker.
 

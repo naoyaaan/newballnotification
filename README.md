@@ -17,8 +17,10 @@ This is a program called **New Ball Notification**(NBN).
 ## Details
 
 * I used **[Selenium](https://www.selenium.dev/documentation/en/)**(python library, support the automation of web browsers) to scrape web page, **[Line notify API](https://notify-bot.line.me/ja/)** ,and **[Twitter API](https://developer.twitter.com/en/docs/twitter-api)** to tweet. I also used python module **"python-twitter"**.This module supports twitter api certification.
+
 * NBN is executed automaticaly and regurarly on the **[Google Cloud Platform](https://console.cloud.google.com/)**, especially using **Google Cloud Function** and **Google Cloud Scheduler**.
-* NBN scrapes [USBC](https://www.bowl.com/approvedballlist/)(approved bowling ball list page) regularly. 
+
+* NBN scrapes [USBC](https://www.bowl.com/approvedballlist/)(approved bowling ball list page) regularly.
 
 ## Reference
 

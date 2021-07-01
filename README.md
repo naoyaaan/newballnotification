@@ -2,7 +2,7 @@
 
 ## What is NBN?
 
-* I programmed NBN to deliver the newest bowling ball information to everyone who love bowling via twitter and Line(for my own account).
+* I programmed NBN to deliver the newest bowling ball information to everyone who love bowling via [twitter(@newballnotifier)](https://twitter.com/newballnotifier) and Line(for my own account).
 
 * New balls must be registered to USBC and they are uploaded before the formal announcement of release by maker.
 

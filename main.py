@@ -50,10 +50,9 @@ def handler(data, context):
     if now.day < 10 : day = '0' + day
     today = month + '-' + day + '-' + str(now.year)
 
-    if(update == today):
+    if(today == update):
         months = ['January','February','March','April','March','June','July','August','September','October','November','December']
         update = months[now.month-1] + ' ' + str(now.day) + ', ' + str(now.year)
-        # update = 'June 1, 2021'
 
         select_element = driver.find_element(By.ID,'ddlApprovedBallList')
         select_object = Select(select_element)
@@ -84,7 +83,7 @@ def handler(data, context):
                     imgs.append(img_link)
             api.PostUpdate(message,media=imgs)
             send_line_notify(ballnames,imgs,os.environ)
-            # send_broadcast(ballnames,imgs,os.environ)
+            send_broadcast(ballnames,imgs,os.environ)
             
 
     driver.quit()
@@ -108,10 +107,5 @@ def send_broadcast(ballnames,imgs,credentials):
     for i in range(len(ballnames)):
         line_access_token = credentials['line_access_token']
         line_api = LineBotApi(line_access_token)
-        image_message = ImageSendMessage(
-            original_content_url = imgs[i],
-            preview_image_url = imgs[i] 
-        )
-
-        line_api.broadcast(TextSendMessage (text=ballnames[i]))
-        line_api.broadcast(image_message)
+        message = ballnames[i] + '\n' + imgs[i]
+        line_api.broadcast(TextSendMessage (text=message))

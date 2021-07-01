@@ -1,8 +1,6 @@
 # New Ball Notification
 
-This is a program called **New Ball Notification**(NBN).
-
-## Aim of NBN
+## What is NBN?
 
 * I programmed NBN to deliver the newest bowling ball information to everyone who love bowling via twitter and Line(for my own account).
 

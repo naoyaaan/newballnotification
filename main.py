@@ -2,14 +2,36 @@
 import os
 import time
 import twitter
+import tweepy
 from selenium import webdriver
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.select import By
 from fake_useragent import UserAgent
-from datetime import datetime,timedelta
+import datetime
 from linebot import LineBotApi
 from linebot.models import TextSendMessage,ImageSendMessage
 import requests
+import re
+
+def get_last_updated_date(credentials):
+    consumer_key=credentials['API_KEY']
+    consumer_secret=credentials['API_SECRET']
+    access_token_key=credentials['ACCESS_TOKEN']
+    access_token_secret=credentials['ACCESS_TOKEN_SECRET']
+    
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token_key, access_token_secret)
+
+    api = tweepy.API(auth)
+    Account = "newballnotifier" #取得したいユーザーのユーザーIDを代入
+    tweets = api.user_timeline(Account, count=200, page=1)
+    print(f'tweet : {tweets[0].text}')
+    pattern = r'\d{4}/\d{2}/\d{2}'
+    result = re.match(pattern,tweets[0].text)
+    if result:
+        date = tweets[0].text.split("\n")[0].split('/')
+        return date[1] + '/' + date[2] + '/' + date[0]
+    return 
 
 def get_twitter_api(credentials):
     return twitter.Api(
@@ -42,25 +64,22 @@ def handler(data, context):
 
     update = driver.find_element_by_xpath('//*[@id="aspnetForm"]/div[6]/div/div[2]/article/section/p/strong').text
     update = update.split(':')[1].replace(' ','')
-    
-    now = datetime.now()
-    month = str(now.month)
-    day = str(now.day)
-    if now.month < 10 : month = '0' + month
-    if now.day < 10 : day = '0' + day
-    today = month + '-' + day + '-' + str(now.year)
+    print("update : " + update )
+    print("last update date : " + get_last_updated_date(os.environ))
 
-    if(today == update):
-        months = ['January','February','March','April','March','June','July','August','September','October','November','December']
-        update = months[now.month-1] + ' ' + str(now.day) + ', ' + str(now.year)
-
+    if(update != get_last_updated_date(os.environ)):
         select_element = driver.find_element(By.ID,'ddlApprovedBallList')
         select_object = Select(select_element)
+        
+        #月　日　年
+        date = update.split('/') 
+        months = ['zero','January','February','March','April','March','June','July','August','September','October','November','December']
+        update = months[int(date[0])] + ' ' + str(int(date[1])) + ', ' + date[2]
+        print("search update date : " + update)
 
-        search_brands = ['Storm','Roto Grip','Sunbridge Co., Ltd.','Brunswick','Ebonite','Hammer','Legend Star','Motiv']
-        # search_brands = ['Storm']
+        search_brands = ['Storm','Roto Grip','900 Global','Sunbridge Co., Ltd.','Brunswick','Ebonite','Hammer','Legend Star','Motiv']
+        ballnames,imgs = [],[]
         for i in range(len(search_brands)):
-            ballnames,imgs = [],[]
             select_object.select_by_value(search_brands[i])
             time.sleep(4)
             print(search_brands[i])
@@ -68,24 +87,22 @@ def handler(data, context):
             approvedlist = driver.find_element_by_id('approvedlist')
             trs = approvedlist.find_elements(By.TAG_NAME,"tr")
 
-            message = str(now.year) + '-' + str(now.month) + '-' + str(now.day)+ '\n' + search_brands[i] + ':\n' 
+            
 
             for j in range(len(trs)):
                 tds = trs[j].find_elements(By.TAG_NAME,"td")
                 name = tds[0].text
-                date = tds[1].text
-                if(date == update):
+                balldate = tds[1].text
+                if(balldate == update):
                     image = tds[0].find_element(By.TAG_NAME,'a')
                     img_link = image.get_attribute('data-original-title').split('\'')[1]
+                    print(name)
                     print(img_link)
-                    message += '\n' +  name
                     ballnames.append(name)
                     imgs.append(img_link)
-            api.PostUpdate(message,media=imgs)
-            send_line_notify(ballnames,imgs,os.environ)
-            send_broadcast(ballnames,imgs,os.environ)
-            
-
+        send_line_notify(ballnames,imgs,os.environ)
+        send_broadcast(ballnames,imgs,os.environ)
+        tweet(ballnames,imgs,api,date)
     driver.quit()
     return "ok"
 
@@ -109,3 +126,15 @@ def send_broadcast(ballnames,imgs,credentials):
         line_api = LineBotApi(line_access_token)
         message = ballnames[i] + '\n' + imgs[i]
         line_api.broadcast(TextSendMessage (text=message))
+
+def tweet(ballnames,img_links,api,date):
+    times = (len(ballnames)-1)//4 + 1
+    for i in range(times):
+        message = date[2] + '/' + date[0] + '/' + date[1] + '\n' + '>>> New Balls Arrived!!! <<<' + '\n'
+        tweet_imgs = []
+        for j in range(4):
+            if 4*i+j < len(ballnames) : 
+                message += '\n' + ballnames[4*i + j]
+                tweet_imgs.append(img_links[4*i + j])
+        api.PostUpdate(message,media=tweet_imgs)
+

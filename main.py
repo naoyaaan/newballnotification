@@ -23,15 +23,22 @@ def get_last_updated_date(credentials):
     auth.set_access_token(access_token_key, access_token_secret)
 
     api = tweepy.API(auth)
+    # auto_follow(api) #自動でフォロー
     Account = "newballnotifier" #取得したいユーザーのユーザーIDを代入
     tweets = api.user_timeline(Account, count=200, page=1)
-    print(f'tweet : {tweets[0].text}')
-    pattern = r'\d{4}/\d{2}/\d{2}'
-    result = re.match(pattern,tweets[0].text)
-    if result:
-        date = tweets[0].text.split("\n")[0].split('/')
-        return date[1] + '/' + date[2] + '/' + date[0]
-    return 
+    for i in range(len(tweets)):
+        pattern = r'\d{4}/\d{2}/\d{2}'
+        result = re.match(pattern,tweets[i].text)
+        if result:
+            date = tweets[i].text.split("\n")[0].split('/')
+            return date[1] + '/' + date[2] + '/' + date[0]
+    print(">>>>>>>>>No date described tweet<<<<<<")
+    return
+
+def auto_follow(api):
+    follower_list= api.followers(count=25)
+    for follower in follower_list:
+        api.create_friendship(follower.id)
 
 def get_twitter_api(credentials):
     return twitter.Api(
@@ -86,8 +93,6 @@ def handler(data, context):
 
             approvedlist = driver.find_element_by_id('approvedlist')
             trs = approvedlist.find_elements(By.TAG_NAME,"tr")
-
-            
 
             for j in range(len(trs)):
                 tds = trs[j].find_elements(By.TAG_NAME,"td")
